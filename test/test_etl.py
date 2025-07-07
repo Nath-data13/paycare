@@ -12,8 +12,7 @@ def test_extract_data():
 5,Charlie Brown,,Houston,65000
 6,Eve Davis,38,Boston,95000
 """)
-    
-    df = pd.read_csv(csv_data)
+df = pd.read_csv(csv_data)
     # Test de base : le DataFrame n'est pas vide
     assert df is not None
     # Vérifie qu'il y a 6 lignes
@@ -24,6 +23,8 @@ def test_extract_data():
 
 # # Step 2: Tarnsform
 # def test_transform_data():
+#     df_clean = df.dropna()
+#     df
 #     assert
 
 # # Step 3: Load
