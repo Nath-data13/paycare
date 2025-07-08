@@ -1,33 +1,52 @@
-import pandas as pd
 import pytest
-from elt import extract_data, transform_data,load_data
+import pandas as pd
+from io import StringIO
+from etl_process import extract_data, transform_data, load_data
 
-# Step 1: Extract
+
+# Test for data extraction
 def test_extract_data():
-    csv_data = StringIO("""id,name,age,city,salary
-1,John Doe,28,New York,70000
-2,Jane Smith,34,Los Angeles,80000
-3,Bob Johnson,45,Chicago,90000
-4,Alice Williams,29,San Francisco,85000
-5,Charlie Brown,,Houston,65000
-6,Eve Davis,38,Boston,95000
-""")
-df = pd.read_csv(csv_data)
-    # Test de base : le DataFrame n'est pas vide
-    assert df is not None
-    # Vérifie qu'il y a 6 lignes
-    assert len(df) == 6
-    # Vérifie que les colonnes sont bien présentes
-    expected_columns = ['id', 'name', 'age', 'city', 'salary']
-    assert list(df.columns) == expected_columns
+    csv_data = StringIO(
+        "employee_id,employee_name,salary\n101,Alice,5000\n102,Bob,6000"
+    )
+    data = pd.read_csv(csv_data)
+    assert data is not None
+    assert len(data) == 2
 
-# # Step 2: Tarnsform
-# def test_transform_data():
-#     df_clean = df.dropna()
-#     df
-#     assert
 
-# # Step 3: Load
-# def test_load_data():
-#     assert    
+# Test for data transformation
+def test_transform_data():
+    data = pd.DataFrame(
+        {
+            "employee_id": [101, 102],
+            "employee_name": ["Alice", "Bob"],
+            "salary": [5000, 6000],
+        }
+    )
 
+    transformed_data = transform_data(data)
+    assert "tax" in transformed_data.columns
+    assert "net_salary" in transformed_data.columns
+    assert transformed_data["tax"][0] == 500  # 10% of 5000
+    assert transformed_data["net_salary"][0] == 4500  # 5000 - 500
+
+
+# Test for data loading
+def test_load_data(tmpdir):
+    data = pd.DataFrame(
+        {
+            "employee_id": [101],
+            "employee_name": ["Alice"],
+            "salary": [5000],
+            "tax": [500],
+            "net_salary": [4500],
+        }
+    )
+
+    output_file = tmpdir.join("output_data.csv")
+    load_data(data, str(output_file))
+    loaded_data = pd.read_csv(output_file)
+
+    assert len(loaded_data) == 1
+    assert loaded_data["employee_name"][0] == "Alice"
+    assert loaded_data["net_salary"][0] == 4500
